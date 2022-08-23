@@ -11,13 +11,24 @@ export class ControlsPannelComponent implements OnInit {
 
   constructor(public service: VoiceRecognitionService) { this.service.init()  }
 
+  public isMicOn = false;
+  public micText =  '🎙️' ;
+
   ngOnInit(): void {
   }
   captureVoice(){
-    this.service.start();
+    if(!this.isMicOn)
+    { 
+     this.service.start();
+     this.isMicOn = true;
+    }else{
+      this.service.stop()
+      this.isMicOn = false
+    }
   }
   stopCapture(){
     this.service.stop()
+    this.isMicOn = false
 
   }
 }

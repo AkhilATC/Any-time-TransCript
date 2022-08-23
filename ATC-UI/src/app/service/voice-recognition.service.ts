@@ -9,64 +9,42 @@ export class VoiceRecognitionService {
   isStoppedSpeechRecog = false;
   public text = '';
   tempWords: any;
-  transcript_arr = [];
-  confidence_arr = [];
-  isStarted = false; //<< this Flag to check if the user stop the service
-  isStoppedAutomatically = true; //<< this Flag to check if the service stopped automaticically.
+ 
   constructor() {}
 
   init() {
-    this.recognition.continuous = true;
     this.recognition.interimResults = true;
     this.recognition.lang = 'en-US';
 
-    this.recognition.addEventListener('result', (e: any) => {
+    this.recognition.addEventListener('result', (e) => {
       const transcript = Array.from(e.results)
-        .map((result: any) => result[0])
+        .map((result) => result[0])
         .map((result) => result.transcript)
         .join('');
-      this.transcript_arr.push(transcript);
       this.tempWords = transcript;
-	  console.log("issues---------")
-      console.log(this.transcript_arr);
-
-      const confidence = Array.from(e.results)
-        .map((result: any) => result[0])
-        .map((result) => result.confidence)
-        .join('');
-      this.confidence_arr.push(confidence);
-      console.log(this.confidence_arr);
-    });
-
-    this.recognition.addEventListener('end', (condition: any) => {
-      this.wordConcat();
-      if (this.isStoppedAutomatically) {
-        this.recognition.stop();
-        console.log('stopped automatically!!');
-        this.recognition.start();
-        console.log('started automatically!!');
-        this.isStoppedAutomatically = true;
-      }
+      console.log(transcript);
     });
   }
 
   start() {
-    if (!this.isStarted) {
-      this.recognition.start();
-      this.isStarted = true;
-      console.log('Speech recognition started');
-    }
-    return true;
+    this.isStoppedSpeechRecog = false;
+    this.recognition.start();
+    console.log("Speech recognition started")
+    this.recognition.addEventListener('end', (condition) => {
+      if (this.isStoppedSpeechRecog) {
+        this.recognition.stop();
+        console.log("End speech recognition")
+      } else {
+        this.wordConcat()
+        this.recognition.start();
+      }
+    });
   }
   stop() {
-    if (this.isStarted) {
-      this.isStoppedAutomatically = false;
-      this.wordConcat();
-      this.recognition.stop();
-      this.isStarted = false;
-      console.log('End speech recognition by user');
-    }
-    return false;
+    this.isStoppedSpeechRecog = true;
+    this.wordConcat()
+    this.recognition.stop();
+    console.log("End speech recognition")
   }
 
   wordConcat() {

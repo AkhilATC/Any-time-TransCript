@@ -2,19 +2,30 @@
 
     margin: 10px 10px 10px 10px;
     //align-items: center;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    
-    .mic-on{
-        color: #000;
+    button{
+
+        border-radius: 40%;
         padding: 10px;
-        margin: 10px;
-        justify-content:space-between;
-        border: solid blue;
-        text-decoration: solid;
-       
-        
+        margin: 10px; 
+    }
+    .mic-on{
+        border: 2px solid blue;
+    }
+    .mic-off{
+        border: 2px solid red;
+    }
+    textarea{
+        min-height: 300px;
+        min-width: 600px;
+        border-color: aquamarine;
+        border-radius: 10%;
+        border-width: 5px;
+        margin: 30px;
+        padding: 20px;
     }
 
 }

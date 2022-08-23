@@ -1,8 +1,7 @@
 <div class="mic-pannel">
 
     <div class="mic">
-        <button class="mic-on" (click)="captureVoice()"> Speak </button>
-        <button class="mic-on" (click)="stopCapture()"> stop </button>
+        <button [ngClass]="isMicOn ? 'mic-on' : 'mic-off'" (click)="captureVoice()" > {{ micText }} </button>
     </div>
     <div class="txt-box">
         <textarea>{{service.text}}</textarea>
