@@ -1,11 +1,10 @@
-from __future__ import absolute_import
-
 from flask import Flask
 from controllers.speech_processor_module import speech_processor
 from celery import Celery
 
 
 celery = Celery(__name__, include=["controllers.tasks"])
+
 
 def create_app():
     application = Flask(__name__)
