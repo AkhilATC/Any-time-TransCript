@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from .transcript_tasks import add_two
+from .transcript_tasks import add_two,get_large_audio_transcription
 from flask import current_app
 
 
@@ -27,8 +27,12 @@ def convert_transcript():
     audio_file = request.files['file']
     try:
         file_extention = audio_file.filename.split('.')[-1].lower()
+        print(file_extention)
         if file_extention not in current_app.config['ALLOWED_EXTENTIONS']:
             return jsonify({"message": "Invalid file stream"})
+        a = get_large_audio_transcription(audio_file, file_extention)
+        print(a)
         return jsonify({"message": "cool"})
     except Exception as e:
+        print(e)
         return jsonify({"message": "error"})
