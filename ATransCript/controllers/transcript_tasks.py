@@ -17,14 +17,16 @@ def add_two(x, y):
 # a function that splits the audio file into chunks
 # and applies speech recognition
 @celery.task(bind=True)
-def get_large_audio_transcription(self,file):
+def get_large_audio_transcription(self, file_path):
     """
     Splitting the large audio file into chunks
     and apply speech recognition on each of these chunks
     """
+    self.update_state('START', meta={"total": 100, "current": 0})
     r = sr.Recognizer()
     # open the audio file using pydub
-    sound = AudioSegment.from_wav(file)
+    sound = AudioSegment.from_wav(file_path)
+    self.update_state('PROGRESS', meta={"total": 100, "current": 1})
     # split audio sound where silence is 700 miliseconds or more and get chunks
     chunks = split_on_silence(sound,
         # experiment with this value for your target audio file
@@ -39,12 +41,15 @@ def get_large_audio_transcription(self,file):
     if not os.path.isdir(folder_name):
         os.mkdir(folder_name)
     whole_text = ""
+    self.update_state('PROGRESS', meta={"total": 100, "current": 5})
+    print(len(chunks))
     # process each chunk
     for i, audio_chunk in enumerate(chunks, start=1):
         # export audio chunk and save it in
         # the `folder_name` directory.
         chunk_filename = os.path.join(folder_name, f"chunk{i}.wav")
         audio_chunk.export(chunk_filename, format="wav")
+        self.update_state('PROGRESS', meta={"total": 100, "current": 20})
         # recognize the chunk
         with sr.AudioFile(chunk_filename) as source:
             audio_listened = r.record(source)
@@ -57,10 +62,14 @@ def get_large_audio_transcription(self,file):
                 text = f"{text.capitalize()}. "
                 print(chunk_filename, ":", text)
                 whole_text += text
+
+    self.update_state('PROGRESS', meta={"total": 100, "current": 90})
     # return the text for all chunks detected
     try:
         path = os.path.join(folder_name)
         os.rmdir(path)
+        if os.path.exists(file_path):
+            os.remove(file_path)
     except Exception as e:
         print("exception")
     return whole_text
