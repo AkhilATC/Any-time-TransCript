@@ -38,9 +38,9 @@ def convert_transcript():
         full_path = os.path.join(current_app.config['UPLOAD_FOLDER'], file_name)
         audio_file.save(full_path)
 
-        task_id = get_large_audio_transcription.delay(full_path)
-
-        return jsonify({"message": "conversion initiated", "task_id": None})
+        task = get_large_audio_transcription.delay(full_path)
+        print(task)
+        return jsonify({"message": "conversion initiated", "task_id": task.id})
     except Exception as e:
         print(e)
         return jsonify({"message": "error"})
@@ -54,11 +54,34 @@ def status_request(task_id):
     :return:
     """
     try:
-        res = celery.AsyncResult(task_id)
-        a = res.status
-        print(a)
-        print(res.info)
-        return "Cool"
+        task = celery.AsyncResult(task_id)
+        print(task.state)
+        if task.state == 'PENDING':
+            # job did not start yet
+            response = {
+                'state': task.state,
+                'current': 0,
+                'total': 1,
+                'status': 'Pending...'
+            }
+        elif task.state != 'FAILURE':
+            response = {
+                'state': task.state,
+                'current': task.info.get('current', 0),
+                'total': task.info.get('total', 1),
+                'status': task.info.get('status', '')
+            }
+            if 'result' in task.info:
+                response['result'] = task.info['result']
+        else:
+            # something went wrong in the background job
+            response = {
+                'state': task.state,
+                'current': 1,
+                'total': 1,
+                'status': str(task.info),  # this is the exception raised
+            }
+        return jsonify(response)
     except Exception as e:
         print(e)
         return "ccc"
